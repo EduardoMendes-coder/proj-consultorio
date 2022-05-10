@@ -7,11 +7,16 @@ import br.com.uniamerica.api.repository.EspecialidadeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
+@Service
 public class ConvenioService {
+
     @Autowired
     private ConvenioRepository convenioRepository;
 
@@ -65,7 +70,9 @@ public class ConvenioService {
     @Transactional
     public void updateStatus(Long id, Convenio convenio){
         if (id == convenio.getId()) {
-            this.convenioRepository.setUpdateExcluido(convenio.getId());
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            dtf.format(LocalDateTime.now());
+            this.convenioRepository.setUpdateExcluido(convenio.getId(), dtf);
         }
         else {
             throw new RuntimeException();

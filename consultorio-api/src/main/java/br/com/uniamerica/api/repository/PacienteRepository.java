@@ -1,7 +1,11 @@
 package br.com.uniamerica.api.repository;
+import java.time.format.DateTimeFormatter;
 
 import br.com.uniamerica.api.entity.Paciente;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -11,4 +15,11 @@ import org.springframework.stereotype.Repository;
  * @version 1.0.0
  */
 @Repository
-public interface PacienteRepository extends JpaRepository<Paciente, Long> { }
+public interface PacienteRepository extends JpaRepository<Paciente, Long> {
+
+    @Modifying
+    @Query("UPDATE Paciente paciente " +
+            "SET paciente.excluido = :now " +
+            "WHERE paciente.id = :paciente")
+    public void setUpdateExcluido(@Param("paciente") Long idPaciente, @Param("now") DateTimeFormatter now);
+}

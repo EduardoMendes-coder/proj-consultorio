@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.Digits;
 import java.time.LocalDateTime;
 
 /**
@@ -39,4 +40,8 @@ public class Agenda extends AbstractEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Medico medico;
 
+    @Getter @Setter
+    @JoinColumn(name = "id_secretaria", nullable = true)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    private Secretaria secretaria;
 }

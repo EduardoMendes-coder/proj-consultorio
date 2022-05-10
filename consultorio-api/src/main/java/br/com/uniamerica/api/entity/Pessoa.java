@@ -63,7 +63,7 @@ public abstract class Pessoa extends AbstractEntity {
     private Sexo sexo;
 
     /**
-     * @see AbstractEntity#AbstractEntity(Long) 
+     * @see AbstractEntity#AbstractEntity(Long)
      *
      * @param id
      * @param nome

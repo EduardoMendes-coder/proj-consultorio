@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.format.DateTimeFormatter;
+
 /**
  * @author Eduardo Mendes
  *
@@ -17,7 +19,7 @@ import org.springframework.stereotype.Repository;
 public interface SecretariaRepository extends JpaRepository<Secretaria, Long> {
     @Modifying
     @Query("UPDATE Secretaria secretaria " +
-            "SET secretaria.excluido = now() " +
+            "SET secretaria.excluido = :now " +
             "WHERE secretaria.id = :secretaria")
-    public void setUpdateExcluido(@Param("secretaria") Long idSecretaria);
+    public void setUpdateExcluido(@Param("secretaria") Long idSecretaria, @Param("now") DateTimeFormatter now);
 }
