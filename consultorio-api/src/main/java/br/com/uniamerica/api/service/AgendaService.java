@@ -79,8 +79,11 @@ public class AgendaService {
     }
 
     public void validarFormulario(Agenda agenda){
-        if (agenda.getPaciente().getId() == null || agenda.getMedico().getId() == null){
-            throw new RuntimeException("Paciente ou Médico não informado");
+        if (agenda.getPaciente() == null || agenda.getPaciente().getId() == null){
+            throw new RuntimeException("Paciente não informado");
+        }
+        if(agenda.getMedico() == null || agenda.getMedico().getId() == null){
+            throw new RuntimeException("Médico não informado");
         }
         if (agenda.getStatus().equals(StatusAgenda.pendente) && agenda.getData().compareTo(LocalDateTime.now()) <= 0){
             throw new RuntimeException("Data do agendamento menor do que data atual");
@@ -116,8 +119,7 @@ public class AgendaService {
         }
         if(agenda.getSecretaria() == null){
             agenda.setStatus(StatusAgenda.pendente);
-        }
-        if(agenda.getSecretaria() != null){
+        }else{
             agenda.setStatus(StatusAgenda.aprovado);
         }
     }
