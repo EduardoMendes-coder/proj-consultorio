@@ -1,6 +1,8 @@
 package br.com.uniamerica.api.repository;
 
 import br.com.uniamerica.api.entity.Agenda;
+import br.com.uniamerica.api.entity.Medico;
+import br.com.uniamerica.api.entity.Paciente;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -9,8 +11,6 @@ import org.springframework.stereotype.Repository;
 
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -26,9 +26,15 @@ public interface AgendaRepository extends JpaRepository<Agenda, Long> {
     @Query("UPDATE Agenda agenda " +
             "SET agenda.excluido = :now " +
             "WHERE agenda.id = :agenda")
-    public void setUpdateExcluido(@Param("agenda") Long idAgenda, @Param("now") DateTimeFormatter now);
+    public void setUpdateExcluido(@Param("agenda") Long idAgenda, @Param("now") LocalDateTime now);
 
-    @Query("select agenda.id from Agenda agenda where agenda.data = :dataAgendamento and agenda.medico = :idMedico")
-    public List<Long> listIdPacienteAgenda(@Param("dataAgendamento")LocalDateTime dataAgendamento,
-                                           @Param("idMedico") Long idMedico);
+    @Query("select agenda.paciente from Agenda agenda where agenda.data = :dataAgendamento and agenda.medico = " +
+            ":medicoA")
+    public List<Paciente> listPacienteAgendados(@Param("dataAgendamento")LocalDateTime dataAgendamento,
+                                               @Param("idMedico") Medico medicoA);
+
+    @Query("select agenda.id from Agenda agenda where agenda.data = :dataAgendamento and agenda.medico = " +
+            ":medicoA and agenda.data = :horaAgendamento")
+    public List<Long> listHorariosAgendados(@Param("dataAgendamento")LocalDateTime dataAgendamento, @Param("idMedico")
+            Medico medicoA, @Param("horaAgendamento") LocalDateTime horagendamento);
 }

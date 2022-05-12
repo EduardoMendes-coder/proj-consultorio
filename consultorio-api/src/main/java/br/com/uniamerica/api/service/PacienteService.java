@@ -85,13 +85,13 @@ public class PacienteService {
                 throw new RuntimeException("Convenio não informado");
             }
             if(paciente.getDataVencimento() == null){
-                throw new RuntimeException("Data de vencimento nÃ£o informada");
+                throw new RuntimeException("Data de vencimento não informada");
             }
             if(paciente.getNumeroCartaoConvenio() == null){
-                throw new RuntimeException("CartÃ£o convÃªnio nÃ£o informado");
+                throw new RuntimeException("Cartão convênio não informado");
             }
-            if(paciente.getDataVencimento().compareTo(LocalDateTime.now()) >= 0){
-                throw new RuntimeException("Data de vencimento do cartÃ£o estÃ¡ expirada");
+            if(paciente.getDataVencimento().compareTo(LocalDateTime.now()) <= 0){
+                throw new RuntimeException("Data de vencimento do cartão está expirada");
             }
         }
         if(paciente.getTipoAtendimento().equals(TipoAtendimento.particular)){

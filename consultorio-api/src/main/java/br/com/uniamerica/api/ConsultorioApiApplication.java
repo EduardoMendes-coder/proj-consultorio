@@ -17,7 +17,5 @@ public class ConsultorioApiApplication {
 	 */
 	public static void main(String[] args) {
 		SpringApplication.run(ConsultorioApiApplication.class, args);
-		AgendaService aS = new AgendaService();
-		System.out.println(aS.testeLista());
 	}
 }

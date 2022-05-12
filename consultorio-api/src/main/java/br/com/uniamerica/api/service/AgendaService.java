@@ -69,9 +69,9 @@ public class AgendaService {
     @Transactional
     public void updateStatus(Long id, Agenda agenda){
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        dtf.format(LocalDateTime.now());
+        LocalDateTime dateUpdateStatus = LocalDateTime.parse(dtf.format(agenda.getData()));
         if (id == agenda.getId()) {
-            this.agendaRepository.setUpdateExcluido(agenda.getId(), dtf);
+            this.agendaRepository.setUpdateExcluido(agenda.getId(), dateUpdateStatus);
         }
         else {
             throw new RuntimeException();
@@ -79,18 +79,17 @@ public class AgendaService {
     }
 
     public void validarFormulario(Agenda agenda){
-        if (agenda.getPaciente().getId() == null){
-            throw new RuntimeException("Paciente não informado");
-        }
-        if (agenda.getMedico().getId() == null){
-            throw new RuntimeException("Médico não informado");
+        if (agenda.getPaciente().getId() == null || agenda.getMedico().getId() == null){
+            throw new RuntimeException("Paciente ou Médico não informado");
         }
         if (agenda.getStatus().equals(StatusAgenda.pendente) && agenda.getData().compareTo(LocalDateTime.now()) <= 0){
             throw new RuntimeException("Data do agendamento menor do que data atual");
         }
-        if (agenda.getStatus().equals(StatusAgenda.compareceu) && agenda.getData().compareTo(LocalDateTime.now()) > 0
-        || agenda.getStatus().equals(StatusAgenda.nao_compareceu) && agenda.getData().compareTo(LocalDateTime.now()) > 0){
-            throw new RuntimeException("Erro: StatusAgenda = compareceu e data de atendimento maior que data atual");
+        if (agenda.getStatus().equals(StatusAgenda.compareceu) && agenda.getData().compareTo(LocalDateTime.now()) > 0 ||
+                agenda.getStatus().equals(StatusAgenda.nao_compareceu)
+                        && agenda.getData().compareTo(LocalDateTime.now()) > 0){
+            throw new RuntimeException("Erro: StatusAgenda = compareceu ou nao_compareceu e data de atendimento maior" +
+                    " que data atual");
         }
 
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
@@ -98,6 +97,7 @@ public class AgendaService {
         LocalDateTime horaAtendMax = LocalDateTime.parse(sdf.format("18:00"));
         LocalDateTime horaAlmoco = LocalDateTime.parse(sdf.format("12:00"));
         LocalDateTime horaVoltaDoAlmoco = LocalDateTime.parse(sdf.format("14:00"));
+
         if(horaAgendamento.compareTo(horaAtendMax) >= 0 || horaAgendamento.compareTo(horaAlmoco) >= 0
                 && horaAgendamento.compareTo(horaVoltaDoAlmoco) < 0){
             throw new RuntimeException("Horário do agendamento está fora do horário de atendimento");
@@ -105,12 +105,13 @@ public class AgendaService {
 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDateTime dataAgendaFormDia = LocalDateTime.parse(dtf.format(agenda.getData()));
-        LocalDateTime dataAgendaFormHorario = LocalDateTime.parse(sdf.format(agenda.getData()));
-        if(this.agendaRepository.listIdPacienteAgenda(dataAgendaFormDia,
-                agenda.getMedico().getId()).contains(agenda.getId())){
+
+        if(this.agendaRepository.listPacienteAgendados(dataAgendaFormDia,
+                agenda.getMedico()).contains(agenda.getPaciente())){
             throw new RuntimeException("Paciente já possui horário marcado no dia de hoje");
         }
-        if(this.agendaRepository.listIdPacienteAgenda(dataAgendaFormHorario, agenda.getMedico().getId()) == null){
+        if(this.agendaRepository.listHorariosAgendados(dataAgendaFormDia, agenda.getMedico(),
+                horaAgendamento).size() > 0){
             throw new RuntimeException("Já existe um paciente agendado nesse horário");
         }
         if(agenda.getSecretaria() == null){
