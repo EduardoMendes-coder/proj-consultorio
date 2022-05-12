@@ -97,12 +97,13 @@ public class AgendaService {
 
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         LocalDateTime horaAgendamento = LocalDateTime.parse(sdf.format(agenda.getData()));
-        LocalDateTime horaAtendMax = LocalDateTime.parse(sdf.format("18:00"));
+        LocalDateTime horaInicioAtend = LocalDateTime.parse(sdf.format("08:00"));
         LocalDateTime horaAlmoco = LocalDateTime.parse(sdf.format("12:00"));
         LocalDateTime horaVoltaDoAlmoco = LocalDateTime.parse(sdf.format("14:00"));
+        LocalDateTime horaAtendMax = LocalDateTime.parse(sdf.format("18:00"));
 
-        if(horaAgendamento.compareTo(horaAtendMax) >= 0 || horaAgendamento.compareTo(horaAlmoco) >= 0
-                && horaAgendamento.compareTo(horaVoltaDoAlmoco) < 0){
+        if(horaAgendamento.compareTo(horaInicioAtend) < 0 && horaAgendamento.compareTo(horaAtendMax) >= 0 ||
+                horaAgendamento.compareTo(horaAlmoco) >= 0 && horaAgendamento.compareTo(horaVoltaDoAlmoco) < 0){
             throw new RuntimeException("Horário do agendamento está fora do horário de atendimento");
         }
 
