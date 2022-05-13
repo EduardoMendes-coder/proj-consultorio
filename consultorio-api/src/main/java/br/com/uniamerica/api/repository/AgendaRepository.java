@@ -29,12 +29,12 @@ public interface AgendaRepository extends JpaRepository<Agenda, Long> {
     public void setUpdateExcluido(@Param("agenda") Long idAgenda, @Param("now") LocalDateTime now);
 
     @Query("select agenda.paciente from Agenda agenda where agenda.data = :dataAgendamento and agenda.medico = " +
-            ":medicoA")
+            ":idMedico")
     public List<Paciente> listPacienteAgendados(@Param("dataAgendamento")LocalDateTime dataAgendamento,
-                                               @Param("idMedico") Medico medicoA);
+                                               @Param("idMedico") Medico idMedico);
 
     @Query("select agenda.id from Agenda agenda where agenda.data = :dataAgendamento and agenda.medico = " +
-            ":medicoA and agenda.data = :horaAgendamento")
+            ":idMedico and agenda.data = :horaAgendamento")
     public List<Long> listHorariosAgendados(@Param("dataAgendamento")LocalDateTime dataAgendamento, @Param("idMedico")
-            Medico medicoA, @Param("horaAgendamento") LocalDateTime horagendamento);
+            Medico idMedico, @Param("horaAgendamento") LocalDateTime horagendamento);
 }

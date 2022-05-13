@@ -39,9 +39,4 @@ public class Agenda extends AbstractEntity {
     @JoinColumn(name = "id_medico", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Medico medico;
-
-    @Getter @Setter
-    @JoinColumn(name = "id_secretaria", nullable = true)
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    private Secretaria secretaria;
 }

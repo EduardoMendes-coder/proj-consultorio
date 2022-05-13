@@ -118,10 +118,5 @@ public class AgendaService {
                 horaAgendamento).size() > 0){
             throw new RuntimeException("Já existe um paciente agendado nesse horário");
         }
-        if(agenda.getSecretaria() == null){
-            agenda.setStatus(StatusAgenda.pendente);
-        }else{
-            agenda.setStatus(StatusAgenda.aprovado);
-        }
     }
 }
