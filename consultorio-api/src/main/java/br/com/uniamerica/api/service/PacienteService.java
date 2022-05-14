@@ -70,9 +70,9 @@ public class PacienteService {
     @Transactional
     public void updateStatus(Long id, Paciente paciente){
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        dtf.format(LocalDateTime.now());
+        LocalDateTime dataNow = LocalDateTime.parse(dtf.format(LocalDateTime.now()));
         if (id == paciente.getId()) {
-            this.pacienteRepository.setUpdateExcluido(paciente.getId(), dtf);
+            this.pacienteRepository.setUpdateExcluido(paciente.getId(), dataNow);
         }
         else {
             throw new RuntimeException();

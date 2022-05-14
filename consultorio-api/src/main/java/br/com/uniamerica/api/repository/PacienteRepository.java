@@ -1,4 +1,5 @@
 package br.com.uniamerica.api.repository;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import br.com.uniamerica.api.entity.Paciente;
@@ -21,5 +22,5 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
     @Query("UPDATE Paciente paciente " +
             "SET paciente.excluido = :now " +
             "WHERE paciente.id = :paciente")
-    public void setUpdateExcluido(@Param("paciente") Long idPaciente, @Param("now") DateTimeFormatter now);
+    public void setUpdateExcluido(@Param("paciente") Long idPaciente, @Param("now") LocalDateTime now);
 }

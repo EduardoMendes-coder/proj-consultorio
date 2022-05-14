@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -22,6 +23,6 @@ public interface ConvenioRepository extends JpaRepository<Convenio, Long> {
     @Query("UPDATE Convenio convenio " +
             "SET convenio.excluido = :now " +
             "WHERE convenio.id = :convenio")
-    public void setUpdateExcluido(@Param("convenio") Long idConvenio, @Param("now") DateTimeFormatter now);
+    public void setUpdateExcluido(@Param("convenio") Long idConvenio, @Param("now") LocalDateTime now);
 }
 

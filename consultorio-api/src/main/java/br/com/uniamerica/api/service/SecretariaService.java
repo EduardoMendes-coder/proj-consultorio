@@ -71,8 +71,8 @@ public class SecretariaService {
     public void updateStatus(Long id, Secretaria secretaria){
         if (id == secretaria.getId()) {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            dtf.format(LocalDateTime.now());
-            this.secretariaRepository.setUpdateExcluido(secretaria.getId(), dtf);
+            LocalDateTime dataNow = LocalDateTime.parse(dtf.format(LocalDateTime.now()));
+            this.secretariaRepository.setUpdateExcluido(secretaria.getId(), dataNow);
         }
         else {
             throw new RuntimeException();

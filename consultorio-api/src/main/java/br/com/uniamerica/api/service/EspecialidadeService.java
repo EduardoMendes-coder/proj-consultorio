@@ -77,8 +77,8 @@ public class EspecialidadeService {
     public void updateStatus(Long id, Especialidade especialidade){
         if (id == especialidade.getId()) {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            dtf.format(LocalDateTime.now());
-            this.especialidadeRepository.setUpdateExcluido(especialidade.getId(), dtf);
+            LocalDateTime dataNow = LocalDateTime.parse(dtf.format(LocalDateTime.now()));
+            this.especialidadeRepository.setUpdateExcluido(especialidade.getId(), dataNow);
         }
         else {
             throw new RuntimeException();

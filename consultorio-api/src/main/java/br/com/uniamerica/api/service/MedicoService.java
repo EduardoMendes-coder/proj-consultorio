@@ -70,8 +70,8 @@ public class MedicoService {
     public void updateStatus(Long id, Medico medico){
         if (id == medico.getId()) {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            dtf.format(LocalDateTime.now());
-            this.medicoRepository.setUpdateExcluido(medico.getId(), dtf);
+            LocalDateTime dataNow = LocalDateTime.parse(dtf.format(LocalDateTime.now()));
+            this.medicoRepository.setUpdateExcluido(medico.getId(), dataNow);
         }
         else {
             throw new RuntimeException();

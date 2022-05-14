@@ -71,8 +71,8 @@ public class ConvenioService {
     public void updateStatus(Long id, Convenio convenio){
         if (id == convenio.getId()) {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            dtf.format(LocalDateTime.now());
-            this.convenioRepository.setUpdateExcluido(convenio.getId(), dtf);
+            LocalDateTime dataNow = LocalDateTime.parse(dtf.format(LocalDateTime.now()));
+            this.convenioRepository.setUpdateExcluido(convenio.getId(), dataNow);
         }
         else {
             throw new RuntimeException();
