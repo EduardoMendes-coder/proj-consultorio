@@ -122,8 +122,8 @@ public class AgendaService {
             throw new RuntimeException("Paciente já possui horário marcado no dia de hoje com esse médico");
         }
 
-        if(this.agendaRepository.findOverlaps(agenda.getDataDe(), agenda.getDataAte()).size() > 0){
-            throw new RuntimeException("Já existe um paciente agendado nesse horário");
+        if(this.agendaRepository.findOverlaps(agenda.getDataDe(), agenda.getDataAte(), agenda.getMedico()).size() > 0){
+            throw new RuntimeException("Já existe um paciente agendado nesse horário, com esse médico");
         }
     }
 }
