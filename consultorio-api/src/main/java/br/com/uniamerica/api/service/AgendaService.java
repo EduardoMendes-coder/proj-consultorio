@@ -88,10 +88,14 @@ public class AgendaService {
             throw new RuntimeException("Médico não informado");
         }
 
+        if(agenda.getDataDe().compareTo(LocalDateTime.now()) < 0){
+            throw new RuntimeException("Data de agendamento menor que a data atual");
+        }
+
         if(agenda.getStatus().equals(StatusAgenda.pendente)){
             if(agenda.getDataDe().compareTo(LocalDateTime.now()) < 0 ||
                     agenda.getDataAte().compareTo(LocalDateTime.now()) < 0){
-                throw new RuntimeException("Data do agendamento menor do que data atual");
+                throw new RuntimeException(" Status pendente e data do agendamento menor do que data atual");
             }
         }
 
