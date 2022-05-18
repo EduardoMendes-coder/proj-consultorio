@@ -1,7 +1,5 @@
 package br.com.uniamerica.api.repository;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
 import br.com.uniamerica.api.entity.Paciente;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

@@ -1,19 +1,13 @@
 package br.com.uniamerica.api.controller;
 
-import br.com.uniamerica.api.entity.Agenda;
 import br.com.uniamerica.api.entity.Medico;
-import br.com.uniamerica.api.repository.AgendaRepository;
-import br.com.uniamerica.api.repository.MedicoRepository;
+import br.com.uniamerica.api.service.MedicoService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author Eduardo Mendes
@@ -26,35 +20,57 @@ import java.util.List;
 public class MedicoController {
 
     @Autowired
-    public MedicoRepository medicoRepository;
+    private MedicoService medicoService;
 
-    /**
-     *
-     * @return
-     */
+    @GetMapping("/{idMedico}")
+    public ResponseEntity<Medico> findById(
+            @PathVariable("idMedico") Long idMedico
+    ){
+        return ResponseEntity.ok().body(this.medicoService.findById(idMedico).get());
+    }
+
     @GetMapping
-    public ResponseEntity<List<Medico>> findAllMedicos(){
-        return new ResponseEntity<>(medicoRepository.findAll(), HttpStatus.OK) ;
+    public ResponseEntity<Page<Medico>> findByAllMedico(
+            Pageable pageable
+    ){
+        return ResponseEntity.ok().body(this.medicoService.listAll(pageable));
     }
 
-    /**
-     *
-     * @return
-     */
-    @GetMapping("listTable")
-    public ResponseEntity<List<Medico>> listTable(){
-        return new ResponseEntity<>(medicoRepository.listTable(), HttpStatus.OK) ;
+    @PutMapping("/{idMedico}")
+    public ResponseEntity<?> update(
+            @PathVariable Long idMedico,
+            @RequestBody Medico medico
+    ){
+        try{
+            this.medicoService.update(idMedico, medico);
+            return ResponseEntity.ok().body("Medico Atualizado com sucesso!");
+        }catch (RuntimeException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
-    /**
-     *
-     * @param medico
-     * @return
-     */
     @PostMapping
-    public ResponseEntity<?> cadastrar(@RequestBody Medico medico){
-        medicoRepository.save(medico);
-        return new ResponseEntity<>("Registro Cadastrado", HttpStatus.OK);
+    public ResponseEntity<?> insert(
+            @RequestBody Medico medico
+    ){
+        try{
+            this.medicoService.insert(medico);
+            return ResponseEntity.ok().body("Médico cadastrado com sucesso!");
+        }catch (RuntimeException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
+    @PutMapping("/status/{idMedico}")
+    public ResponseEntity<?> updateStatus(
+            @PathVariable Long idMedico,
+            @RequestBody Medico medico
+    ){
+        try{
+            this.medicoService.updateStatus(idMedico, medico);
+            return ResponseEntity.ok().body("Médico desativado com sucesso!");
+        }catch (RuntimeException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

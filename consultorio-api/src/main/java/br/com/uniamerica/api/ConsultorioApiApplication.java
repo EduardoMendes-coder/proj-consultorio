@@ -2,7 +2,6 @@ package br.com.uniamerica.api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import br.com.uniamerica.api.service.AgendaService;
 /**
  * @author Eduardo Mendes
  * 
