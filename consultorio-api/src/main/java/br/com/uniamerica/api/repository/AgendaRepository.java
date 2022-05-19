@@ -37,4 +37,9 @@ public interface AgendaRepository extends JpaRepository<Agenda, Long> {
             "and :dataAte between agenda.dataDe and agenda.dataAte and agenda.medico = :idMedico")
     public List<Agenda> findOverlaps(@Param("dataDe") LocalDateTime dataDe, @Param("dataAte") LocalDateTime dataAte,
                                      @Param("idMedico") Medico idMedico);
+
+    @Query(value = "select agenda from Agenda agenda where date_part('dow', dataDe) = :0 and date_part('dow', dataDe) = :6 " +
+            "and date_part('dow', dataAte) = :0 and date_part('dow', dataAte) = :6", nativeQuery = true)
+    public List<Agenda> checkBusinessDay(@Param("dataDe") LocalDateTime dataDe, @Param("dataAte") LocalDateTime dataAte);
+
 }
