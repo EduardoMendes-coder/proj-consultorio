@@ -120,9 +120,15 @@ public class AgendaService {
             throw new RuntimeException("Horário do agendamento está fora do horário de atendimento do consultório");
         }
 
+        if(this.agendaRepository.checkBusinessDay(agenda.getId()).contains(0)
+                && this.agendaRepository.checkBusinessDay(agenda.getId()).contains(6)){
+            throw new RuntimeException("Agendamento fora de dia útil.");
+        }
+
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDateTime dataAgendaFormDia = LocalDateTime.parse(dtf.format(agenda.getDataDe()));
-        if(this.agendaRepository.listPacienteAgendados(dataAgendaFormDia, agenda.getMedico()).contains(agenda.getPaciente())){
+        if(this.agendaRepository.listPacienteAgendados(dataAgendaFormDia, agenda.getMedico()).contains(
+                agenda.getPaciente())){
             throw new RuntimeException("Paciente já possui horário marcado no dia de hoje com esse médico");
         }
 
