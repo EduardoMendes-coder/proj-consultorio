@@ -28,15 +28,16 @@ public interface AgendaRepository extends JpaRepository<Agenda, Long> {
             "WHERE agenda.id = :agenda")
     public void setUpdateExcluido(@Param("agenda") Long idAgenda, @Param("now") LocalDateTime now);
 
-    @Query("select agenda.paciente from Agenda agenda where agenda.dataDe = :dataAgendamento and agenda.medico = " +
-            ":idMedico")
-    public List<Paciente> listPacienteAgendados(@Param("dataAgendamento")LocalDateTime dataAgendamento,
-                                               @Param("idMedico") Medico idMedico);
-
     @Query("select agenda from Agenda agenda where :dataDe between agenda.dataDe and agenda.dataAte " +
             "and :dataAte between agenda.dataDe and agenda.dataAte and agenda.medico = :idMedico")
     public List<Agenda> findOverlaps(@Param("dataDe") LocalDateTime dataDe, @Param("dataAte") LocalDateTime dataAte,
-                                     @Param("idMedico") Medico idMedico);
+                                     @Param("idMedico") Long idMedico);
+
+    @Query("select agenda from Agenda agenda where agenda.dataDe = :dataDe and agenda.dataAte = :dataAte " +
+            "and agenda.medico = :idMedico")
+    public List<Agenda> sameTimeAndDoctor(@Param("dataDe") LocalDateTime dataDe,
+                                          @Param("dataAte") LocalDateTime dataAte,
+                                          @Param("idMedico") Long idMedico);
 
     @Query(value = "select date_part('dow', agenda.dataDe), date_part('dow', agenda,dataAte) from Agenda Agenda " +
             "where agenda.id = :idAgenda", nativeQuery = true)
