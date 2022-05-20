@@ -152,4 +152,12 @@ public class AgendaService {
             return false;
         }
     }
+
+    private boolean CheckSameTimeDoctor(LocalDateTime d1, LocalDateTime d2, Long idMedico){
+        if(this.agendaRepository.sameTimeAndDoctor(d1, d2, idMedico).size() > 0){
+            return true;
+        }else {
+            return false;
+        }
+    }
 }
