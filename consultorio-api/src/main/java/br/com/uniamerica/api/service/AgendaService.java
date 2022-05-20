@@ -103,29 +103,65 @@ public class AgendaService {
                 " que data atual");
             }
         }
+    }
 
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-        LocalDateTime horaDe = LocalDateTime.parse(sdf.format(agenda.getDataDe()));
-        LocalDateTime horaAte = LocalDateTime.parse(sdf.format(agenda.getDataAte()));
-        LocalDateTime horaInicioAtend = LocalDateTime.parse(sdf.format("08:00"));
-        LocalDateTime horaAlmoco = LocalDateTime.parse(sdf.format("12:00"));
-        LocalDateTime horaVoltaDoAlmoco = LocalDateTime.parse(sdf.format("14:00"));
-        LocalDateTime horaAtendMax = LocalDateTime.parse(sdf.format("18:00"));
+    //----------------------------------------MÉTODOS DE VALIDAÇÕES--------------------------------------------------
 
-        if(horaDe.compareTo(horaInicioAtend) < 0 || horaDe.compareTo(horaAlmoco) >= 0  && horaDe.compareTo(horaVoltaDoAlmoco) < 0
-                || horaDe.compareTo(horaAtendMax) >= 0 || horaAte.compareTo(horaAlmoco) > 0 && horaAte.compareTo(horaVoltaDoAlmoco) < 0
-                || horaAte.compareTo(horaAtendMax) > 0 && horaAte.compareTo(horaInicioAtend) < 0){
-            throw new RuntimeException("Horário do agendamento está fora do horário de atendimento do consultório");
+    private boolean CheckDateFuture(LocalDateTime localDateTime){
+        if(localDateTime.compareTo(LocalDateTime.now()) > 0){
+            return true;
+        }else{
+            return false;
         }
+    }
 
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime dataAgendaFormDia = LocalDateTime.parse(dtf.format(agenda.getDataDe()));
-        if(this.agendaRepository.listPacienteAgendados(dataAgendaFormDia, agenda.getMedico()).contains(agenda.getPaciente())){
-            throw new RuntimeException("Paciente já possui horário marcado no dia de hoje com esse médico");
+    private boolean CheckOpeningHours(LocalDateTime localDateTime){
+        if(localDateTime.getHour() > 8 && localDateTime.getHour() < 12 && localDateTime.getHour() > 14
+                && localDateTime.getHour() < 18){
+            return true;
+        }else {
+            return false;
         }
+    }
 
-        if(this.agendaRepository.findOverlaps(agenda.getDataDe(), agenda.getDataAte(), agenda.getMedico()).size() > 0){
-            throw new RuntimeException("Já existe um paciente agendado nesse horário, com esse médico");
+    private boolean DateAteMenorQueDateAte(LocalDateTime localDateTime1, LocalDateTime localDateTime2){
+        if(localDateTime2.compareTo(localDateTime1) > 0){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    private boolean CheckBusinessDay(Long id){
+        if(this.agendaRepository.checkBusinessDay(id).contains(0)
+                || this.agendaRepository.checkBusinessDay(id).contains(6)){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    private boolean CheckOverlaps(LocalDateTime dataDe, LocalDateTime dataAte, Long idMedico){
+        if(this.agendaRepository.findOverlaps(dataDe, dataAte, idMedico).size() > 0){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    private boolean CheckSameTimeDoctor(LocalDateTime d1, LocalDateTime d2, Long idMedico){
+        if(this.agendaRepository.sameTimeAndDoctor(d1, d2, idMedico).size() > 0){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+    private boolean CheckSameTimePatient(LocalDateTime d1, LocalDateTime d2, Long idPaciente){
+        if(this.agendaRepository.sameTimeAndPatient(d1, d2, idPaciente).size() > 0){
+            return true;
+        }else {
+            return false;
         }
     }
 }

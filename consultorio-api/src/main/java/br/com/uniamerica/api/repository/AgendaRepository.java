@@ -28,18 +28,25 @@ public interface AgendaRepository extends JpaRepository<Agenda, Long> {
             "WHERE agenda.id = :agenda")
     public void setUpdateExcluido(@Param("agenda") Long idAgenda, @Param("now") LocalDateTime now);
 
-    @Query("select agenda.paciente from Agenda agenda where agenda.dataDe = :dataAgendamento and agenda.medico = " +
-            ":idMedico")
-    public List<Paciente> listPacienteAgendados(@Param("dataAgendamento")LocalDateTime dataAgendamento,
-                                               @Param("idMedico") Medico idMedico);
-
     @Query("select agenda from Agenda agenda where :dataDe between agenda.dataDe and agenda.dataAte " +
             "and :dataAte between agenda.dataDe and agenda.dataAte and agenda.medico = :idMedico")
-    public List<Agenda> findOverlaps(@Param("dataDe") LocalDateTime dataDe, @Param("dataAte") LocalDateTime dataAte,
-                                     @Param("idMedico") Medico idMedico);
+    public List<Agenda> findOverlaps(@Param("dataDe") LocalDateTime dataDe,
+                                     @Param("dataAte") LocalDateTime dataAte,
+                                     @Param("idMedico") Long idMedico);
 
-    @Query(value = "select agenda from Agenda agenda where date_part('dow', dataDe) = :0 and date_part('dow', dataDe) = :6 " +
-            "and date_part('dow', dataAte) = :0 and date_part('dow', dataAte) = :6", nativeQuery = true)
-    public List<Agenda> checkBusinessDay(@Param("dataDe") LocalDateTime dataDe, @Param("dataAte") LocalDateTime dataAte);
+    @Query("select agenda from Agenda agenda where :dataDe between agenda.dataDe and agenda.dataAte " +
+            "and :dataAte between agenda.dataDe and agenda.dataAte and agenda.paciente = :idPaciente")
+    public List<Agenda> sameTimeAndPatient(@Param("dataDe") LocalDateTime dataDe,
+                                           @Param("dataAte") LocalDateTime dataAte,
+                                           @Param("idPaciente") Long idPaciente);
 
+    @Query("select agenda from Agenda agenda where agenda.dataDe = :dataDe and agenda.dataAte = :dataAte " +
+            "and agenda.medico = :idMedico")
+    public List<Agenda> sameTimeAndDoctor(@Param("dataDe") LocalDateTime dataDe,
+                                          @Param("dataAte") LocalDateTime dataAte,
+                                          @Param("idMedico") Long idMedico);
+
+    @Query(value = "select date_part('dow', agenda.dataDe), date_part('dow', agenda,dataAte) from Agenda Agenda " +
+            "where agenda.id = :idAgenda", nativeQuery = true)
+    public List<Integer> checkBusinessDay(@Param("idAgenda") Long idAgenda);
 }
