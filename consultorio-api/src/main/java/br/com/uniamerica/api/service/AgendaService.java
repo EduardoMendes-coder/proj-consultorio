@@ -160,4 +160,12 @@ public class AgendaService {
             return false;
         }
     }
+
+    private boolean CheckSameTimePatient(LocalDateTime d1, LocalDateTime d2, Long idPaciente){
+        if(this.agendaRepository.sameTimeAndPatient(d1, d2, idPaciente).size() > 0){
+            return true;
+        }else {
+            return false;
+        }
+    }
 }
