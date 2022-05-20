@@ -11,6 +11,7 @@ import org.springframework.util.Assert;
 
 import javax.transaction.Transactional;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -98,14 +99,6 @@ public class AgendaService {
         }
     }
 
-    private boolean checkFit(Agenda agenda){
-        if(agenda.getEncaixe() == null){
-            return true;
-        }else{
-            return false;
-        }
-    }
-
     private boolean checkDateFuture(LocalDateTime localDateTime){
         if(localDateTime.compareTo(LocalDateTime.now()) >= 0){
             return true;
@@ -123,19 +116,19 @@ public class AgendaService {
         }
     }
 
-    private boolean dateAteMenorQueDateAte(LocalDateTime localDateTime1, LocalDateTime localDateTime2){
-        if(localDateTime2.compareTo(localDateTime1) > 0){
+    private boolean endDateGreaterStart(Agenda agenda){
+        if(agenda.getDataAte().compareTo(agenda.getDataDe()) > 0){
             return true;
         }else{
             return false;
         }
     }
 
-    private boolean checkBusinessDay(Long id){
-        if(this.agendaRepository.checkBusinessDay(id).contains(0)
-                || this.agendaRepository.checkBusinessDay(id).contains(6)){
+    private boolean checkBusinessDay(LocalDateTime data){
+        if(data.getDayOfWeek() == DayOfWeek.SATURDAY ||
+            data.getDayOfWeek() == DayOfWeek.SUNDAY){
             return false;
-        }else{
+        }else {
             return true;
         }
     }
@@ -150,20 +143,37 @@ public class AgendaService {
         return true;
     }
 
-    private boolean checkSameTimeDoctor(LocalDateTime d1, LocalDateTime d2, Long idMedico){
-        if(this.agendaRepository.sameTimeAndDoctor(d1, d2, idMedico).size() > 0){
+    private boolean checkSameTimeDoctor(Agenda agenda){
+        if(this.agendaRepository.sameTimeAndDoctor(agenda.getDataDe(), agenda.getDataAte(),
+                agenda.getMedico().getId()).size() > 0){
             return false;
         }else {
             return true;
         }
     }
 
-    private boolean checkSameTimePatient(LocalDateTime d1, LocalDateTime d2, Long idPaciente){
-        if(this.agendaRepository.sameTimeAndPatient(d1, d2, idPaciente).size() > 0){
+    private boolean checkSameTimePatient(Agenda agenda){
+        if(this.agendaRepository.sameTimeAndPatient(agenda.getDataDe(), agenda.getDataAte(),
+                agenda.getPaciente().getId()).size() > 0){
             return false;
         }else {
             return true;
         }
+    }
+
+    private boolean validateStatus(Agenda agenda){
+        if(agenda.getStatus().equals(StatusAgenda.pendente) && agenda.getDataDe().compareTo(LocalDateTime.now()) < 0){
+            return false;
+        }
+        else if(agenda.getStatus().equals(StatusAgenda.compareceu)
+                && agenda.getDataDe().compareTo(LocalDateTime.now()) > 0){
+            return false;
+        }
+        else if(agenda.getStatus().equals(StatusAgenda.nao_compareceu)
+                && agenda.getDataDe().compareTo(LocalDateTime.now()) > 0){
+            return false;
+        }
+        return true;
     }
 
     private void essentialValidation(Agenda agenda){
@@ -173,11 +183,13 @@ public class AgendaService {
         Assert.isTrue(checkDateFuture(agenda.getDataAte()));
         Assert.isTrue(checkOpeningHours(agenda.getDataDe()));
         Assert.isTrue(checkOpeningHours(agenda.getDataAte()));
-        Assert.isTrue(dateAteMenorQueDateAte(agenda.getDataDe(), agenda.getDataAte()));
-        Assert.isTrue(checkBusinessDay(agenda.getId()));
+        Assert.isTrue(endDateGreaterStart(agenda));
+        Assert.isTrue(checkBusinessDay(agenda.getDataDe()));
+        Assert.isTrue(checkBusinessDay(agenda.getDataAte()));
         Assert.isTrue(checkOverlaps(agenda));
-        Assert.isTrue(checkSameTimePatient(agenda.getDataDe(), agenda.getDataAte(), agenda.getPaciente().getId()));
-        Assert.isTrue(checkSameTimeDoctor(agenda.getDataDe(), agenda.getDataAte(), agenda.getMedico().getId()));
+        Assert.isTrue(checkSameTimePatient(agenda));
+        Assert.isTrue(checkSameTimeDoctor(agenda));
+        Assert.isTrue(validateStatus(agenda));
     }
 
     public void validateUpdate(Agenda agenda){
