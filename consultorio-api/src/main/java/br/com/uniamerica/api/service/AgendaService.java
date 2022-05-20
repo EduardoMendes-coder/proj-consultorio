@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import javax.transaction.Transactional;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -42,12 +44,12 @@ public class AgendaService {
      * @param agenda
      */
     public void update(Long id, Agenda agenda){
-        validarFormulario(agenda);
+        validateUpdate(agenda);
         saveTransactional(agenda);
     }
 
     public void insert(Agenda agenda){
-        validarFormulario(agenda);
+        validateInsert(agenda);
         saveTransactional(agenda);
     }
 
@@ -77,45 +79,42 @@ public class AgendaService {
         }
     }
 
-    public void validarFormulario(Agenda agenda){
-        if (agenda.getPaciente() == null || agenda.getPaciente().getId() == null){
-            throw new RuntimeException("Paciente não informado");
-        }
-
-        if(agenda.getMedico() == null || agenda.getMedico().getId() == null){
-            throw new RuntimeException("Médico não informado");
-        }
-
-        if(agenda.getDataDe().compareTo(LocalDateTime.now()) < 0){
-            throw new RuntimeException("Data de agendamento menor que a data atual");
-        }
-
-        if(agenda.getStatus().equals(StatusAgenda.pendente)){
-            if(agenda.getDataDe().compareTo(LocalDateTime.now()) < 0 ||
-                    agenda.getDataAte().compareTo(LocalDateTime.now()) < 0){
-                throw new RuntimeException(" Status pendente e data do agendamento menor do que data atual");
-            }
-        }
-
-        if(agenda.getStatus().equals(StatusAgenda.compareceu) || agenda.getStatus().equals(StatusAgenda.nao_compareceu)){
-            if(agenda.getDataDe().compareTo(LocalDateTime.now()) > 0 || agenda.getDataAte().compareTo(LocalDateTime.now()) > 0){
-                throw new RuntimeException("Erro: StatusAgenda = compareceu ou nao_compareceu e data de atendimento maior" +
-                " que data atual");
-            }
-        }
-    }
 
     //----------------------------------------MÉTODOS DE VALIDAÇÕES--------------------------------------------------
 
-    private boolean CheckDateFuture(LocalDateTime localDateTime){
-        if(localDateTime.compareTo(LocalDateTime.now()) > 0){
+    private boolean checkPatientIsNull(Agenda agenda){
+        if(agenda.getPaciente() == null || agenda.getPaciente().getId() == null){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    private boolean checkDoctorIsNull(Agenda agenda){
+        if(agenda.getMedico() == null || agenda.getMedico().getId() == null){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    private boolean checkFit(Agenda agenda){
+        if(agenda.getEncaixe() == null){
             return true;
         }else{
             return false;
         }
     }
 
-    private boolean CheckOpeningHours(LocalDateTime localDateTime){
+    private boolean checkDateFuture(LocalDateTime localDateTime){
+        if(localDateTime.compareTo(LocalDateTime.now()) >= 0){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    private boolean checkOpeningHours(LocalDateTime localDateTime){
         if(localDateTime.getHour() > 8 && localDateTime.getHour() < 12 && localDateTime.getHour() > 14
                 && localDateTime.getHour() < 18){
             return true;
@@ -124,7 +123,7 @@ public class AgendaService {
         }
     }
 
-    private boolean DateAteMenorQueDateAte(LocalDateTime localDateTime1, LocalDateTime localDateTime2){
+    private boolean dateAteMenorQueDateAte(LocalDateTime localDateTime1, LocalDateTime localDateTime2){
         if(localDateTime2.compareTo(localDateTime1) > 0){
             return true;
         }else{
@@ -132,7 +131,7 @@ public class AgendaService {
         }
     }
 
-    private boolean CheckBusinessDay(Long id){
+    private boolean checkBusinessDay(Long id){
         if(this.agendaRepository.checkBusinessDay(id).contains(0)
                 || this.agendaRepository.checkBusinessDay(id).contains(6)){
             return false;
@@ -141,27 +140,57 @@ public class AgendaService {
         }
     }
 
-    private boolean CheckOverlaps(LocalDateTime dataDe, LocalDateTime dataAte, Long idMedico){
-        if(this.agendaRepository.findOverlaps(dataDe, dataAte, idMedico).size() > 0){
-            return true;
-        }else{
-            return false;
+    private boolean checkOverlaps(Agenda agenda){
+        if(agenda.getEncaixe() == null) {
+            if (this.agendaRepository.findOverlaps(agenda.getDataDe(), agenda.getDataAte(), agenda.getMedico().getId())
+                    .size() > 0) {
+                return false;
+            }
         }
+        return true;
     }
 
-    private boolean CheckSameTimeDoctor(LocalDateTime d1, LocalDateTime d2, Long idMedico){
+    private boolean checkSameTimeDoctor(LocalDateTime d1, LocalDateTime d2, Long idMedico){
         if(this.agendaRepository.sameTimeAndDoctor(d1, d2, idMedico).size() > 0){
-            return true;
-        }else {
             return false;
+        }else {
+            return true;
         }
     }
 
-    private boolean CheckSameTimePatient(LocalDateTime d1, LocalDateTime d2, Long idPaciente){
+    private boolean checkSameTimePatient(LocalDateTime d1, LocalDateTime d2, Long idPaciente){
         if(this.agendaRepository.sameTimeAndPatient(d1, d2, idPaciente).size() > 0){
-            return true;
-        }else {
             return false;
+        }else {
+            return true;
+        }
+    }
+
+    private void essentialValidation(Agenda agenda){
+        Assert.isTrue(checkPatientIsNull(agenda));
+        Assert.isTrue(checkDoctorIsNull(agenda));
+        Assert.isTrue(checkDateFuture(agenda.getDataDe()));
+        Assert.isTrue(checkDateFuture(agenda.getDataAte()));
+        Assert.isTrue(checkOpeningHours(agenda.getDataDe()));
+        Assert.isTrue(checkOpeningHours(agenda.getDataAte()));
+        Assert.isTrue(dateAteMenorQueDateAte(agenda.getDataDe(), agenda.getDataAte()));
+        Assert.isTrue(checkBusinessDay(agenda.getId()));
+        Assert.isTrue(checkOverlaps(agenda));
+        Assert.isTrue(checkSameTimePatient(agenda.getDataDe(), agenda.getDataAte(), agenda.getPaciente().getId()));
+        Assert.isTrue(checkSameTimeDoctor(agenda.getDataDe(), agenda.getDataAte(), agenda.getMedico().getId()));
+    }
+
+    public void validateUpdate(Agenda agenda){
+        essentialValidation(agenda);
+    }
+
+    public void validateInsert(Agenda agenda){
+        if(agenda.getSecretaria() == null || agenda.getSecretaria().getId() == null){
+            essentialValidation(agenda);
+            agenda.setStatus(StatusAgenda.pendente);
+        }else{
+            essentialValidation(agenda);
+            agenda.setStatus(StatusAgenda.aprovado);
         }
     }
 }
