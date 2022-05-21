@@ -80,9 +80,6 @@ public class AgendaService {
         }
     }
 
-
-    //----------------------------------------MÉTODOS DE VALIDAÇÕES--------------------------------------------------
-
     private boolean checkPatientIsNull(Agenda agenda){
         if(agenda.getPaciente() == null || agenda.getPaciente().getId() == null){
             return false;
