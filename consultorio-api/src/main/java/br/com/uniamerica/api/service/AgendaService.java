@@ -7,8 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import javax.transaction.Transactional;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -42,12 +45,12 @@ public class AgendaService {
      * @param agenda
      */
     public void update(Long id, Agenda agenda){
-        validarFormulario(agenda);
+        validateUpdate(agenda);
         saveTransactional(agenda);
     }
 
     public void insert(Agenda agenda){
-        validarFormulario(agenda);
+        validateInsert(agenda);
         saveTransactional(agenda);
     }
 
@@ -77,55 +80,175 @@ public class AgendaService {
         }
     }
 
-    public void validarFormulario(Agenda agenda){
-        if (agenda.getPaciente() == null || agenda.getPaciente().getId() == null){
-            throw new RuntimeException("Paciente não informado");
-        }
 
+    //----------------------------------------MÉTODOS DE VALIDAÇÕES--------------------------------------------------
+
+    private boolean checkPatientIsNull(Agenda agenda){
+        if(agenda.getPaciente() == null || agenda.getPaciente().getId() == null){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    private boolean checkDoctorIsNull(Agenda agenda){
         if(agenda.getMedico() == null || agenda.getMedico().getId() == null){
-            throw new RuntimeException("Médico não informado");
+            return false;
+        }else{
+            return true;
         }
+    }
 
-        if(agenda.getDataDe().compareTo(LocalDateTime.now()) < 0){
-            throw new RuntimeException("Data de agendamento menor que a data atual");
+    private boolean checkDateFuture(LocalDateTime localDateTime){
+        if(localDateTime.compareTo(LocalDateTime.now()) >= 0){
+            return true;
+        }else{
+            return false;
         }
+    }
 
-        if(agenda.getStatus().equals(StatusAgenda.pendente)){
-            if(agenda.getDataDe().compareTo(LocalDateTime.now()) < 0 ||
-                    agenda.getDataAte().compareTo(LocalDateTime.now()) < 0){
-                throw new RuntimeException(" Status pendente e data do agendamento menor do que data atual");
+    private boolean checkOpeningHours(LocalDateTime localDateTime){
+        if(localDateTime.getHour() > 8 && localDateTime.getHour() < 12 && localDateTime.getHour() > 14
+                && localDateTime.getHour() < 18){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+    private boolean endDateGreaterStart(Agenda agenda){
+        if(agenda.getDataAte().compareTo(agenda.getDataDe()) > 0){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    private boolean checkBusinessDay(LocalDateTime data){
+        if(data.getDayOfWeek() == DayOfWeek.SATURDAY ||
+            data.getDayOfWeek() == DayOfWeek.SUNDAY){
+            return false;
+        }else {
+            return true;
+        }
+    }
+
+    private boolean checkOverlaps(Agenda agenda){
+        if(agenda.getEncaixe() == null) {
+            if (this.agendaRepository.findOverlaps(agenda.getDataDe(), agenda.getDataAte(), agenda.getMedico().getId())
+                    .size() > 0) {
+                return false;
             }
         }
+        return true;
+    }
 
-        if(agenda.getStatus().equals(StatusAgenda.compareceu) || agenda.getStatus().equals(StatusAgenda.nao_compareceu)){
-            if(agenda.getDataDe().compareTo(LocalDateTime.now()) > 0 || agenda.getDataAte().compareTo(LocalDateTime.now()) > 0){
-                throw new RuntimeException("Erro: StatusAgenda = compareceu ou nao_compareceu e data de atendimento maior" +
-                " que data atual");
+    private boolean checkSameTimeDoctor(Agenda agenda){
+        if(this.agendaRepository.sameTimeAndDoctor(agenda.getDataDe(), agenda.getDataAte(),
+                agenda.getMedico().getId()).size() > 0){
+            return false;
+        }else {
+            return true;
+        }
+    }
+
+    private boolean checkSameTimePatient(Agenda agenda){
+        if(this.agendaRepository.sameTimeAndPatient(agenda.getDataDe(), agenda.getDataAte(),
+                agenda.getPaciente().getId()).size() > 0){
+            return false;
+        }else {
+            return true;
+        }
+    }
+
+    private boolean validateDateStatus(Agenda agenda){
+        if(agenda.getStatus().equals(StatusAgenda.pendente) && agenda.getDataDe().compareTo(LocalDateTime.now()) < 0){
+            return false;
+        }
+        else if(agenda.getStatus().equals(StatusAgenda.compareceu)
+                && agenda.getDataDe().compareTo(LocalDateTime.now()) > 0){
+            return false;
+        }
+        else if(agenda.getStatus().equals(StatusAgenda.nao_compareceu)
+                && agenda.getDataDe().compareTo(LocalDateTime.now()) > 0){
+            return false;
+        }
+        return true;
+    }
+
+    public void updateStatusRejected(Agenda agenda){
+        if(agenda.getStatus().equals(StatusAgenda.pendente) && agenda.getSecretaria() != null){
+            agenda.setStatus(StatusAgenda.rejeitado);
+        }else {
+            throw new RuntimeException("Para o agendamento ser REJEITADO o status precisa ser pendente");
+        }
+    }
+
+    public void updateStatusApproved(Agenda agenda){
+        if(agenda.getStatus().equals(StatusAgenda.pendente) && agenda.getSecretaria() != null){
+            agenda.setStatus(StatusAgenda.aprovado);
+        }else{
+            throw new RuntimeException("Para o agendamento ser APROVADO o status precisa ser pendente");
+        }
+    }
+
+    public void updateStatusCanceled(Agenda agenda){
+        if(agenda.getStatus().equals(StatusAgenda.pendente) || agenda.getStatus().equals(StatusAgenda.aprovado)){
+            if(agenda.getSecretaria() != null || agenda.getPaciente() != null){
+                agenda.setStatus(StatusAgenda.cancelado);
+            }else{
+                throw new RuntimeException("Deve haver paciente ou secretaria para o agendamento ser cancelado");
             }
+        }else{
+            throw new RuntimeException("Para o agendamento ser CANCELADO o status precisa ser pendete ou aprovado");
         }
+    }
 
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-        LocalDateTime horaDe = LocalDateTime.parse(sdf.format(agenda.getDataDe()));
-        LocalDateTime horaAte = LocalDateTime.parse(sdf.format(agenda.getDataAte()));
-        LocalDateTime horaInicioAtend = LocalDateTime.parse(sdf.format("08:00"));
-        LocalDateTime horaAlmoco = LocalDateTime.parse(sdf.format("12:00"));
-        LocalDateTime horaVoltaDoAlmoco = LocalDateTime.parse(sdf.format("14:00"));
-        LocalDateTime horaAtendMax = LocalDateTime.parse(sdf.format("18:00"));
-
-        if(horaDe.compareTo(horaInicioAtend) < 0 || horaDe.compareTo(horaAlmoco) >= 0  && horaDe.compareTo(horaVoltaDoAlmoco) < 0
-                || horaDe.compareTo(horaAtendMax) >= 0 || horaAte.compareTo(horaAlmoco) > 0 && horaAte.compareTo(horaVoltaDoAlmoco) < 0
-                || horaAte.compareTo(horaAtendMax) > 0 && horaAte.compareTo(horaInicioAtend) < 0){
-            throw new RuntimeException("Horário do agendamento está fora do horário de atendimento do consultório");
+    public void updateStatusAttend(Agenda agenda){
+        if(agenda.getStatus().equals(StatusAgenda.aprovado) && agenda.getSecretaria() != null){
+            Assert.isTrue(validateDateStatus(agenda));
+            agenda.setStatus(StatusAgenda.compareceu);
+        }else{
+            throw new RuntimeException("Para o agendamento ser = COMPARECEU o status precisa ser aprovado");
         }
+    }
 
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime dataAgendaFormDia = LocalDateTime.parse(dtf.format(agenda.getDataDe()));
-        if(this.agendaRepository.listPacienteAgendados(dataAgendaFormDia, agenda.getMedico()).contains(agenda.getPaciente())){
-            throw new RuntimeException("Paciente já possui horário marcado no dia de hoje com esse médico");
+    public void updateStatusNotAttend(Agenda agenda){
+        if(agenda.getStatus().equals(StatusAgenda.aprovado) && agenda.getSecretaria() != null){
+            Assert.isTrue(validateDateStatus(agenda));
+            agenda.setStatus(StatusAgenda.nao_compareceu);
+        }else{
+            throw new RuntimeException("Para o agendamento ser = NAO_COMPARECEU o status precisa ser aprovado")
         }
+    }
 
-        if(this.agendaRepository.findOverlaps(agenda.getDataDe(), agenda.getDataAte(), agenda.getMedico()).size() > 0){
-            throw new RuntimeException("Já existe um paciente agendado nesse horário, com esse médico");
+    private void essentialValidation(Agenda agenda){
+        Assert.isTrue(checkPatientIsNull(agenda));
+        Assert.isTrue(checkDoctorIsNull(agenda));
+        Assert.isTrue(checkDateFuture(agenda.getDataDe()));
+        Assert.isTrue(checkDateFuture(agenda.getDataAte()));
+        Assert.isTrue(checkOpeningHours(agenda.getDataDe()));
+        Assert.isTrue(checkOpeningHours(agenda.getDataAte()));
+        Assert.isTrue(endDateGreaterStart(agenda));
+        Assert.isTrue(checkBusinessDay(agenda.getDataDe()));
+        Assert.isTrue(checkBusinessDay(agenda.getDataAte()));
+        Assert.isTrue(checkOverlaps(agenda));
+        Assert.isTrue(checkSameTimePatient(agenda));
+        Assert.isTrue(checkSameTimeDoctor(agenda));
+        Assert.isTrue(validateDateStatus(agenda));
+    }
+
+    public void validateUpdate(Agenda agenda){
+        essentialValidation(agenda);
+    }
+
+    public void validateInsert(Agenda agenda){
+        if(agenda.getSecretaria() == null || agenda.getSecretaria().getId() == null){
+            essentialValidation(agenda);
+            agenda.setStatus(StatusAgenda.pendente);
+        }else{
+            essentialValidation(agenda);
+            agenda.setStatus(StatusAgenda.aprovado);
         }
     }
 }
