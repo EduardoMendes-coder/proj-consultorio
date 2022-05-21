@@ -161,7 +161,7 @@ public class AgendaService {
         }
     }
 
-    private boolean validateStatus(Agenda agenda){
+    private boolean validateDateStatus(Agenda agenda){
         if(agenda.getStatus().equals(StatusAgenda.pendente) && agenda.getDataDe().compareTo(LocalDateTime.now()) < 0){
             return false;
         }
@@ -174,6 +174,10 @@ public class AgendaService {
             return false;
         }
         return true;
+    }
+
+    public void updateStatus(Agenda agenda){
+        
     }
 
     private void essentialValidation(Agenda agenda){
@@ -189,7 +193,7 @@ public class AgendaService {
         Assert.isTrue(checkOverlaps(agenda));
         Assert.isTrue(checkSameTimePatient(agenda));
         Assert.isTrue(checkSameTimeDoctor(agenda));
-        Assert.isTrue(validateStatus(agenda));
+        Assert.isTrue(validateDateStatus(agenda));
     }
 
     public void validateUpdate(Agenda agenda){
