@@ -80,9 +80,6 @@ public class AgendaService {
         }
     }
 
-
-    //----------------------------------------MÉTODOS DE VALIDAÇÕES--------------------------------------------------
-
     private boolean checkPatientIsNull(Agenda agenda){
         if(agenda.getPaciente() == null || agenda.getPaciente().getId() == null){
             return false;
@@ -218,7 +215,7 @@ public class AgendaService {
             Assert.isTrue(validateDateStatus(agenda));
             agenda.setStatus(StatusAgenda.nao_compareceu);
         }else{
-            throw new RuntimeException("Para o agendamento ser = NAO_COMPARECEU o status precisa ser aprovado")
+            throw new RuntimeException("Para o agendamento ser = NAO_COMPARECEU o status precisa ser aprovado");
         }
     }
 
