@@ -176,8 +176,50 @@ public class AgendaService {
         return true;
     }
 
-    public void updateStatus(Agenda agenda){
-        
+    public void updateStatusRejected(Agenda agenda){
+        if(agenda.getStatus().equals(StatusAgenda.pendente) && agenda.getSecretaria() != null){
+            agenda.setStatus(StatusAgenda.rejeitado);
+        }else {
+            throw new RuntimeException("Para o agendamento ser REJEITADO o status precisa ser pendente");
+        }
+    }
+
+    public void updateStatusApproved(Agenda agenda){
+        if(agenda.getStatus().equals(StatusAgenda.pendente) && agenda.getSecretaria() != null){
+            agenda.setStatus(StatusAgenda.aprovado);
+        }else{
+            throw new RuntimeException("Para o agendamento ser APROVADO o status precisa ser pendente");
+        }
+    }
+
+    public void updateStatusCanceled(Agenda agenda){
+        if(agenda.getStatus().equals(StatusAgenda.pendente) || agenda.getStatus().equals(StatusAgenda.aprovado)){
+            if(agenda.getSecretaria() != null || agenda.getPaciente() != null){
+                agenda.setStatus(StatusAgenda.cancelado);
+            }else{
+                throw new RuntimeException("Deve haver paciente ou secretaria para o agendamento ser cancelado");
+            }
+        }else{
+            throw new RuntimeException("Para o agendamento ser CANCELADO o status precisa ser pendete ou aprovado");
+        }
+    }
+
+    public void updateStatusAttend(Agenda agenda){
+        if(agenda.getStatus().equals(StatusAgenda.aprovado) && agenda.getSecretaria() != null){
+            Assert.isTrue(validateDateStatus(agenda));
+            agenda.setStatus(StatusAgenda.compareceu);
+        }else{
+            throw new RuntimeException("Para o agendamento ser = COMPARECEU o status precisa ser aprovado");
+        }
+    }
+
+    public void updateStatusNotAttend(Agenda agenda){
+        if(agenda.getStatus().equals(StatusAgenda.aprovado) && agenda.getSecretaria() != null){
+            Assert.isTrue(validateDateStatus(agenda));
+            agenda.setStatus(StatusAgenda.nao_compareceu);
+        }else{
+            throw new RuntimeException("Para o agendamento ser = NAO_COMPARECEU o status precisa ser aprovado")
+        }
     }
 
     private void essentialValidation(Agenda agenda){
