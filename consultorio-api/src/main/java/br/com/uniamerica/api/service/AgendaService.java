@@ -8,9 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-
 import javax.transaction.Transactional;
-import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -131,7 +129,7 @@ public class AgendaService {
     }
 
     private boolean checkOverlaps(Agenda agenda){
-        if(agenda.getEncaixe() == null) {
+        if(!agenda.getEncaixe()) {
             if (this.agendaRepository.findOverlaps(agenda.getDataDe(), agenda.getDataAte(), agenda.getMedico().getId())
                     .size() > 0) {
                 return false;
@@ -141,21 +139,23 @@ public class AgendaService {
     }
 
     private boolean checkSameTimeDoctor(Agenda agenda){
-        if(this.agendaRepository.sameTimeAndDoctor(agenda.getDataDe(), agenda.getDataAte(),
-                agenda.getMedico().getId()).size() > 0){
-            return false;
-        }else {
-            return true;
+        if(!agenda.getEncaixe()){
+            if(this.agendaRepository.findOverlaps(agenda.getDataDe(), agenda.getDataAte(),
+                    agenda.getMedico().getId()).size() > 0){
+                return false;
+            }
         }
+        return true;
     }
 
     private boolean checkSameTimePatient(Agenda agenda){
-        if(this.agendaRepository.sameTimeAndPatient(agenda.getDataDe(), agenda.getDataAte(),
-                agenda.getPaciente().getId()).size() > 0){
-            return false;
-        }else {
-            return true;
+        if(!agenda.getEncaixe()){
+            if(this.agendaRepository.sameTimeAndPatient(agenda.getDataDe(), agenda.getDataAte(),
+                    agenda.getPaciente().getId()).size() > 0){
+                return false;
+            }
         }
+       return true;
     }
 
     private boolean validateDateStatus(Agenda agenda){
@@ -220,19 +220,19 @@ public class AgendaService {
     }
 
     private void essentialValidation(Agenda agenda){
-        Assert.isTrue(checkPatientIsNull(agenda));
-        Assert.isTrue(checkDoctorIsNull(agenda));
-        Assert.isTrue(checkDateFuture(agenda.getDataDe()));
-        Assert.isTrue(checkDateFuture(agenda.getDataAte()));
-        Assert.isTrue(checkOpeningHours(agenda.getDataDe()));
-        Assert.isTrue(checkOpeningHours(agenda.getDataAte()));
-        Assert.isTrue(endDateGreaterStart(agenda));
-        Assert.isTrue(checkBusinessDay(agenda.getDataDe()));
-        Assert.isTrue(checkBusinessDay(agenda.getDataAte()));
-        Assert.isTrue(checkOverlaps(agenda));
-        Assert.isTrue(checkSameTimePatient(agenda));
-        Assert.isTrue(checkSameTimeDoctor(agenda));
-        Assert.isTrue(validateDateStatus(agenda));
+        Assert.isTrue(checkPatientIsNull(agenda), "Error: paciente é nulo");
+        Assert.isTrue(checkDoctorIsNull(agenda), "Error: Médico é nulo");
+        Assert.isTrue(checkDateFuture(agenda.getDataDe()), "Error: Data está no passado");
+        Assert.isTrue(checkDateFuture(agenda.getDataAte()), "Error: Data está no passado");
+        Assert.isTrue(checkOpeningHours(agenda.getDataDe()), "Error: Fora de horario de atendimento");
+        Assert.isTrue(checkOpeningHours(agenda.getDataAte()), "Error: Fora de horario de atendimento");
+        Assert.isTrue(endDateGreaterStart(agenda), "Error: Data de fim menor que a de inicio");
+        Assert.isTrue(checkBusinessDay(agenda.getDataDe()), "Error: fim de semana");
+        Assert.isTrue(checkBusinessDay(agenda.getDataAte()), "Error: fim de semana");
+        Assert.isTrue(checkOverlaps(agenda), "Error: Sobreposição");
+        Assert.isTrue(checkSameTimePatient(agenda), "Error: duplo horario paciente");
+        Assert.isTrue(checkSameTimeDoctor(agenda), "Error: duplo horario medico");
+        Assert.isTrue(validateDateStatus(agenda), "Error: data incompativel com status");
     }
 
     public void validateUpdate(Agenda agenda){
