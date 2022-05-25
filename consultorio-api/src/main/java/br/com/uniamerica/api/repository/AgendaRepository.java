@@ -37,8 +37,10 @@ public interface AgendaRepository extends JpaRepository<Agenda, Long> {
                                      @Param("idAgenda") Long idAgenda);
 
     @Query("select agenda from Agenda agenda where :dataDe between agenda.dataDe and agenda.dataAte " +
-            "and :dataAte between agenda.dataDe and agenda.dataAte and agenda.paciente = :idPaciente")
+            "and :dataAte between agenda.dataDe and agenda.dataAte and agenda.paciente = :idPaciente " +
+            "and agenda.id <> :idAgenda")
     public List<Agenda> sameTimeAndPatient(@Param("dataDe") LocalDateTime dataDe,
                                            @Param("dataAte") LocalDateTime dataAte,
-                                           @Param("idPaciente") Long idPaciente);
+                                           @Param("idPaciente") Long idPaciente,
+                                            @Param("idAgenda") Long idAgenda);
 }

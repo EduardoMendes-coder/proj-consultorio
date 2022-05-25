@@ -152,7 +152,7 @@ public class AgendaService {
     private boolean checkSameTimePatient(Agenda agenda){
         if(!agenda.getEncaixe()){
             if(this.agendaRepository.sameTimeAndPatient(agenda.getDataDe(), agenda.getDataAte(),
-                    agenda.getPaciente().getId()).size() > 0){
+                    agenda.getPaciente().getId(), agenda.getId()).size() > 0){
                 return false;
             }
         }
