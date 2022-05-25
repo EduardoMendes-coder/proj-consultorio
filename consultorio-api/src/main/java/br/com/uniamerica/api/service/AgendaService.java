@@ -130,7 +130,8 @@ public class AgendaService {
 
     private boolean checkOverlaps(Agenda agenda){
         if(!agenda.getEncaixe()) {
-            if (this.agendaRepository.findOverlaps(agenda.getDataDe(), agenda.getDataAte(), agenda.getMedico().getId())
+            if (this.agendaRepository.findOverlaps(agenda.getDataDe(), agenda.getDataAte(), agenda.getMedico().getId(),
+                            agenda.getId())
                     .size() > 0) {
                 return false;
             }
@@ -141,7 +142,7 @@ public class AgendaService {
     private boolean checkSameTimeDoctor(Agenda agenda){
         if(!agenda.getEncaixe()){
             if(this.agendaRepository.findOverlaps(agenda.getDataDe(), agenda.getDataAte(),
-                    agenda.getMedico().getId()).size() > 0){
+                    agenda.getMedico().getId(), agenda.getId()).size() > 0){
                 return false;
             }
         }

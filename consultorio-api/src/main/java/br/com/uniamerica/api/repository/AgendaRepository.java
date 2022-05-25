@@ -29,10 +29,12 @@ public interface AgendaRepository extends JpaRepository<Agenda, Long> {
     public void setUpdateExcluido(@Param("agenda") Long idAgenda, @Param("now") LocalDateTime now);
 
     @Query("select agenda from Agenda agenda where :dataDe between agenda.dataDe and agenda.dataAte " +
-            "and :dataAte between agenda.dataDe and agenda.dataAte and agenda.medico = :idMedico")
+            "and :dataAte between agenda.dataDe and agenda.dataAte and agenda.medico = :idMedico " +
+            "and agenda.id <> :idAgenda")
     public List<Agenda> findOverlaps(@Param("dataDe") LocalDateTime dataDe,
                                      @Param("dataAte") LocalDateTime dataAte,
-                                     @Param("idMedico") Long idMedico);
+                                     @Param("idMedico") Long idMedico,
+                                     @Param("idAgenda") Long idAgenda);
 
     @Query("select agenda from Agenda agenda where :dataDe between agenda.dataDe and agenda.dataAte " +
             "and :dataAte between agenda.dataDe and agenda.dataAte and agenda.paciente = :idPaciente")
