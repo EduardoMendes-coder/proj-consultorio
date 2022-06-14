@@ -23,10 +23,8 @@ import java.util.List;
 public interface AgendaRepository extends JpaRepository<Agenda, Long> {
 
     @Modifying
-    @Query("UPDATE Agenda agenda " +
-            "SET agenda.excluido = :now " +
-            "WHERE agenda.id = :agenda")
-    public void setUpdateExcluido(@Param("agenda") Long idAgenda, @Param("now") LocalDateTime now);
+    @Query("UPDATE Agenda agenda SET agenda.ativo = false WHERE agenda.id = :idAgenda")
+    public void desativar(@Param("idAgenda") Long idAgenda);
 
     @Query("select agenda from Agenda agenda where :dataDe between agenda.dataDe and agenda.dataAte " +
             "and :dataAte between agenda.dataDe and agenda.dataAte and agenda.medico = :idMedico " +

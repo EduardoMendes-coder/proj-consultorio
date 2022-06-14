@@ -17,8 +17,6 @@ import org.springframework.stereotype.Repository;
 public interface PacienteRepository extends JpaRepository<Paciente, Long> {
 
     @Modifying
-    @Query("UPDATE Paciente paciente " +
-            "SET paciente.excluido = :now " +
-            "WHERE paciente.id = :paciente")
-    public void setUpdateExcluido(@Param("paciente") Long idPaciente, @Param("now") LocalDateTime now);
+    @Query("UPDATE Paciente paciente SET paciente.ativo = false WHERE paciente.id = :idPaciente")
+    public void desativar(@Param("idPaciente") Long idPaciente);
 }
