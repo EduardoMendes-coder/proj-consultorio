@@ -7,8 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 /**
@@ -73,9 +71,7 @@ public class EspecialidadeService {
     @Transactional
     public void updateStatus(Long id, Especialidade especialidade){
         if (id == especialidade.getId()) {
-            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            LocalDateTime dataNow = LocalDateTime.parse(dtf.format(LocalDateTime.now()));
-            this.especialidadeRepository.setUpdateExcluido(especialidade.getId(), dataNow);
+            this.especialidadeRepository.desativar(especialidade.getId());
         }
         else {
             throw new RuntimeException();

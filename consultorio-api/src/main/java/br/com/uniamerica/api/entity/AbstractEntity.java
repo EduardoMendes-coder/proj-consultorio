@@ -32,8 +32,8 @@ public abstract class AbstractEntity {
     private LocalDateTime atualizado;
 
     @Getter @Setter
-    @Column(name = "excluido")
-    private LocalDateTime excluido;
+    @Column(name = "ativo", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean ativo;
 
     /**
      *

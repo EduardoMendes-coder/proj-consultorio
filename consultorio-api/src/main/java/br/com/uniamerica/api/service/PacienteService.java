@@ -70,7 +70,7 @@ public class PacienteService {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime dataNow = LocalDateTime.parse(dtf.format(LocalDateTime.now()));
         if (id == paciente.getId()) {
-            this.pacienteRepository.setUpdateExcluido(paciente.getId(), dataNow);
+            this.pacienteRepository.desativar(paciente.getId());
         }
         else {
             throw new RuntimeException();
