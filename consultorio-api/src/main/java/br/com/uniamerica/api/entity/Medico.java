@@ -37,7 +37,7 @@ public class Medico extends Pessoa {
 
     @Getter @Setter
     @JoinColumn(name = "id_especialidade")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Especialidade especialidade;
 
     /**
