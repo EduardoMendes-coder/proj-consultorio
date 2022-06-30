@@ -30,10 +30,10 @@ public class MedicoController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<Medico>> findByAllMedico(
+    public ResponseEntity<Page<Medico>> listByAllPage(
             Pageable pageable
     ){
-        return ResponseEntity.ok().body(this.medicoService.listAll(pageable));
+        return ResponseEntity.ok().body(this.medicoService.findAll(pageable));
     }
 
     @PutMapping("/{idMedico}")
