@@ -29,7 +29,7 @@ public class MedicoService {
      * @param pageable
      * @return
      */
-    public Page<Medico> listAll(Pageable pageable){
+    public Page<Medico> findAll(Pageable pageable){
         return this.medicoRepository.findAll(pageable);
     }
 

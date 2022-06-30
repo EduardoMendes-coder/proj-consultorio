@@ -24,7 +24,7 @@ public class ConvenioController {
 
     @GetMapping("/{idConvenio}")
     public ResponseEntity<Convenio> findById(
-            @PathVariable("IdConvenio") Long idConvenio
+            @PathVariable("idConvenio") Long idConvenio
     ){
         return ResponseEntity.ok().body(this.convenioService.findById(idConvenio).get());
     }
